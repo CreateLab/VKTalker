@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VKTalker", "VKTalker\VKTalker.csproj", "{F5B4F7D5-7415-4A3C-8AB8-FF43684437BF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VKTest", "VKTest\VKTest.csproj", "{DEF6C63D-1952-47D0-AFE0-02934A3968E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{F5B4F7D5-7415-4A3C-8AB8-FF43684437BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5B4F7D5-7415-4A3C-8AB8-FF43684437BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5B4F7D5-7415-4A3C-8AB8-FF43684437BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEF6C63D-1952-47D0-AFE0-02934A3968E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEF6C63D-1952-47D0-AFE0-02934A3968E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEF6C63D-1952-47D0-AFE0-02934A3968E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEF6C63D-1952-47D0-AFE0-02934A3968E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
