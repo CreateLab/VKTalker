@@ -9,3 +9,5 @@ appId
 login
 password
 ```
+
+4) run
