@@ -3,7 +3,6 @@
         xmlns:vm="clr-namespace:VKTalker.ViewModels;assembly=VKTalker"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:controls="clr-namespace:VKTalker.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="VKTalker.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
@@ -12,36 +11,9 @@
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
-    <Window.Styles>
-        <Style Selector="controls|ScrollingListBox">
-                <Setter Property="Background" Value="{DynamicResource ThemeBackgroundBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource ThemeBorderMidBrush}"/>
-                <Setter Property="BorderThickness" Value="{DynamicResource ThemeBorderThickness}"/>
-                <Setter Property="Padding" Value="4"/>
-                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
-                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
-                <Setter Property="Template">
-                    <ControlTemplate>
-                        <Border Name="border" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <ScrollViewer Name="PART_ScrollViewer"
-                                          Background="{TemplateBinding Background}"
-                                          HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
-                                          VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}">
-                                <ItemsPresenter Name="PART_ItemsPresenter"
-                                                Items="{TemplateBinding Items}"
-                                                ItemsPanel="{TemplateBinding ItemsPanel}"
-                                                ItemTemplate="{TemplateBinding ItemTemplate}"
-                                                Margin="{TemplateBinding Padding}"
-                                                VirtualizationMode="{TemplateBinding VirtualizationMode}"/>
-                            </ScrollViewer>
-                        </Border>
-                    </ControlTemplate>
-                </Setter>
-        </Style>
-    </Window.Styles>
+
     <Grid ColumnDefinitions="Auto,*">
-        <ListBox Items="{Binding DialogModels}" SelectedItem="{Binding SelectedModel}">
+        <ListBox Name="ChatListBox" Width="200" Items="{Binding DialogModels}" SelectedItem="{Binding SelectedModel}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid RowDefinitions="Auto,Auto">
@@ -52,18 +24,21 @@
             </ListBox.ItemTemplate>
         </ListBox>
         <Grid  Grid.Column="1" RowDefinitions="Auto,*,Auto">
-            <controls:ScrollingListBox Grid.Row="1"
-                                       ScrollModel="{Binding ScrollModel}"
-                                       Items="{Binding MessageModels}" Background="Red">
-                <controls:ScrollingListBox.ItemTemplate>
+            <TextBlock Text="{Binding ChatName}" HorizontalAlignment="Center"></TextBlock>
+            <ListBox Name="MessageListBox" Grid.Row="1" Items="{Binding MessageModels}">
+                <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid RowDefinitions="Auto,Auto">
                             <TextBlock Grid.Row="0" Text="{Binding Name}" ></TextBlock>
                             <TextBlock  Grid.Row="1" Text="{Binding Message}"></TextBlock>
                         </Grid>
                     </DataTemplate>
-                </controls:ScrollingListBox.ItemTemplate>
-            </controls:ScrollingListBox>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                <TextBox Text="{Binding MessageText}"></TextBox>
+                <Button Grid.Column="1" Command="{Binding SendMessageCommand}"> Send </Button>
+            </Grid>
         </Grid>
     </Grid>
 

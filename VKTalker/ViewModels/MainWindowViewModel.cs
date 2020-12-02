@@ -22,12 +22,14 @@ namespace VKTalker.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         private bool _isEnabled = false;
-        private ScrollModel _scrollModel;
+        private string _chatName, _messageText;
         private DialogModel _selectedModel;
         private object lockDialog = new object();
         private object lockMessage = new object();
+
         public ObservableCollectionExtended<DialogModel> DialogModels { get; } =
             new ObservableCollectionExtended<DialogModel>();
+
         public ObservableCollectionExtended<MessageModel> MessageModels { get; } =
             new ObservableCollectionExtended<MessageModel>();
 
@@ -37,8 +39,10 @@ namespace VKTalker.ViewModels
         private ReactiveCommand<Unit, Unit> authCommand { get; }
         private ReactiveCommand<Unit, Unit> dialogsDataCommand { get; }
         private ReactiveCommand<Unit, Unit> messagesDataCommand { get; }
+        public ReactiveCommand<Unit, Unit> SendMessageCommand { get; }
 
         private long? ChatId { get; set; }
+
         public MainWindowViewModel()
         {
             dTimer.AutoReset = true;
@@ -46,6 +50,17 @@ namespace VKTalker.ViewModels
             mTimer.AutoReset = true;
             mTimer.Enabled = true;
             authCommand = ReactiveCommand.CreateFromTask(Auth);
+            SendMessageCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                if (!string.IsNullOrEmpty(MessageText) && ChatId is not null)
+                    await api.Messages.SendAsync(new MessagesSendParams
+                    {
+                        PeerId = ChatId,
+                        Message = MessageText.Trim(),
+                        RandomId = 0
+                    });
+                MessageText = string.Empty;
+            });
             dialogsDataCommand = ReactiveCommand.CreateFromTask(SetStartupDialog);
             messagesDataCommand = ReactiveCommand.CreateFromTask(GetMessages);
             authCommand.ThrownExceptions.Subscribe(e => Console.WriteLine(e.Message));
@@ -57,14 +72,8 @@ namespace VKTalker.ViewModels
             get => _isEnabled;
             set
             {
-                dTimer.Elapsed += (sender, args) =>
-                {
-                    dialogsDataCommand.Execute().Wait();
-                };
-                mTimer.Elapsed += (sender, args) =>
-                {
-                    messagesDataCommand.Execute().Wait();
-                };
+                dTimer.Elapsed += (sender, args) => { dialogsDataCommand.Execute().Wait(); };
+                mTimer.Elapsed += (sender, args) => { messagesDataCommand.Execute().Wait(); };
                 this.RaiseAndSetIfChanged(ref _isEnabled, value);
             }
         }
@@ -75,14 +84,20 @@ namespace VKTalker.ViewModels
             set
             {
                 ChatId = value?.ChatId;
+                ChatName = value?.Name;
                 this.RaiseAndSetIfChanged(ref _selectedModel, value);
             }
         }
 
-        public ScrollModel ScrollModelProperty
+        public string MessageText
         {
-            get => _scrollModel;
-            set => this.RaiseAndSetIfChanged(ref _scrollModel , value);
+            get => _messageText;
+            set => this.RaiseAndSetIfChanged(ref _messageText, value);
+        }
+        public string ChatName
+        {
+            get => _chatName;
+            set => this.RaiseAndSetIfChanged(ref _chatName, value);
         }
 
         private async Task Auth()
@@ -107,7 +122,7 @@ namespace VKTalker.ViewModels
             var dialogs = await api.Messages.GetConversationsAsync(new GetConversationsParams
             {
                 Filter = GetConversationFilter.All,
-                Count = 20,
+                Count = 23,
                 Offset = 0,
                 Extended = true
             });
@@ -133,12 +148,11 @@ namespace VKTalker.ViewModels
                 DialogModels.Clear();
                 DialogModels.AddRange(models);
             }
-            
         }
 
         private async Task GetMessages()
         {
-            if(ChatId is null) 
+            if (ChatId is null)
                 return;
             try
             {
@@ -156,19 +170,15 @@ namespace VKTalker.ViewModels
                 }).Reverse().ToList();
                 lock (lockMessage)
                 {
-                    var m = MessageModels.LastOrDefault()?.ChatId;
-                    var m1 = messages.LastOrDefault()?.ChatId;
                     if (MessageModels.LastOrDefault()?.ChatId != messages.LastOrDefault()?.ChatId)
                     {
                         MessageModels.Clear();
                         MessageModels.AddRange(messages);
-                        ScrollModelProperty = new ScrollModel{Count = MessageModels.Count};
                     }
                 }
             }
             catch (Exception e)
             {
-                
             }
         }
 
@@ -183,15 +193,20 @@ namespace VKTalker.ViewModels
             var title = dialog.Conversation.ChatSettings?.Title;
             if (!string.IsNullOrEmpty(title))
                 return title;
-            var user = getConversationsResult.Profiles.FirstOrDefault(u => u.Id == dialog.LastMessage.FromId);
+            var user = getConversationsResult.Profiles.FirstOrDefault(u => u.Id == GetPartnerId(dialog.LastMessage));
             return user?.FirstName ?? string.Empty;
+        }
+
+        private long? GetPartnerId(Message dialogLastMessage)
+        {
+            return dialogLastMessage.FromId == api.UserId ? dialogLastMessage.PeerId : dialogLastMessage.FromId;
         }
 
         private string GetText(Message dialogLastMessage)
         {
             if (dialogLastMessage?.Text == null) return string.Empty;
             return dialogLastMessage.Text.Length > 10
-                ? dialogLastMessage.Text.Substring(0, 10)+"..."
+                ? dialogLastMessage.Text.Substring(0, 10) + "..."
                 : dialogLastMessage.Text;
         }
     }
