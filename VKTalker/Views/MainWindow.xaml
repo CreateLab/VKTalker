@@ -16,27 +16,30 @@
         <ListBox Name="ChatListBox" Width="200" Items="{Binding DialogModels}" SelectedItem="{Binding SelectedModel}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid RowDefinitions="Auto,Auto">
-                        <TextBlock Grid.Row="0" Text="{Binding Name}" ></TextBlock>
-                        <TextBlock  Grid.Row="1" Text="{Binding Message}"></TextBlock>
+                    <Grid RowDefinitions="Auto,Auto" Margin="5">
+                        <TextBlock Grid.Row="0" Text="{Binding Name}" FontWeight="Bold" />
+                        <TextBlock Grid.Row="1" Text="{Binding Message}" />
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Grid  Grid.Column="1" RowDefinitions="Auto,*,Auto">
-            <TextBlock Text="{Binding ChatName}" HorizontalAlignment="Center"></TextBlock>
+        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+            <TextBlock Text="{Binding ChatName}" HorizontalAlignment="Center" />
             <ListBox Name="MessageListBox" Grid.Row="1" Items="{Binding MessageModels}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid RowDefinitions="Auto,Auto">
-                            <TextBlock Grid.Row="0" Text="{Binding Name}" ></TextBlock>
-                            <TextBlock  Grid.Row="1" Text="{Binding Message}"></TextBlock>
-                        </Grid>
+                        <Border Margin="2" BorderThickness="1" BorderBrush="Black">
+                            <Grid RowDefinitions="Auto,Auto, Auto">
+                                <TextBlock Grid.Row="0" Text="{Binding Name}" FontWeight="Bold" />
+                                <TextBlock Grid.Row="1" Text="{Binding Message}" />
+                                <TextBlock Grid.Row="2" Text="{Binding Date}" FontWeight="Light" />
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
             <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
-                <TextBox Text="{Binding MessageText}"></TextBox>
+                <TextBox Text="{Binding MessageText}" />
                 <Button Grid.Column="1" Command="{Binding SendMessageCommand}"> Send </Button>
             </Grid>
         </Grid>

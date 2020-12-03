@@ -7,5 +7,6 @@ namespace VKTalker.Models
         public string Message{ get; set; }
         public string Image { get; set; }
         public long? ChatId { get; set; }
+        public string Date { get; set; }
     }
 }

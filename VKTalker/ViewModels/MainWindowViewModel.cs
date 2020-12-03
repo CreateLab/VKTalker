@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using DynamicData.Binding;
@@ -34,8 +32,6 @@ namespace VKTalker.ViewModels
             new ObservableCollectionExtended<MessageModel>();
 
         private VkApi api = new VkApi();
-        Timer dTimer = new Timer(1000);
-        Timer mTimer = new Timer(1000);
         private ReactiveCommand<Unit, Unit> authCommand { get; }
         private ReactiveCommand<Unit, Unit> dialogsDataCommand { get; }
         private ReactiveCommand<Unit, Unit> messagesDataCommand { get; }
@@ -45,10 +41,6 @@ namespace VKTalker.ViewModels
 
         public MainWindowViewModel()
         {
-            dTimer.AutoReset = true;
-            dTimer.Enabled = true;
-            mTimer.AutoReset = true;
-            mTimer.Enabled = true;
             authCommand = ReactiveCommand.CreateFromTask(Auth);
             SendMessageCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -63,7 +55,11 @@ namespace VKTalker.ViewModels
             });
             dialogsDataCommand = ReactiveCommand.CreateFromTask(SetStartupDialog);
             messagesDataCommand = ReactiveCommand.CreateFromTask(GetMessages);
-            authCommand.ThrownExceptions.Subscribe(e => Console.WriteLine(e.Message));
+            authCommand.ThrownExceptions
+                .Merge(SendMessageCommand.ThrownExceptions)
+                .Merge(dialogsDataCommand.ThrownExceptions)
+                .Merge(messagesDataCommand.ThrownExceptions)
+                .Subscribe(e => Console.WriteLine(e.Message));
             authCommand.Execute().Subscribe();
         }
 
@@ -72,8 +68,12 @@ namespace VKTalker.ViewModels
             get => _isEnabled;
             set
             {
-                dTimer.Elapsed += (sender, args) => { dialogsDataCommand.Execute().Wait(); };
-                mTimer.Elapsed += (sender, args) => { messagesDataCommand.Execute().Wait(); };
+                Observable.Timer(TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(500))
+                    .Select(time => Unit.Default)
+                    .InvokeCommand(this, x => x.messagesDataCommand);
+                Observable.Timer(TimeSpan.FromMilliseconds(1000), TimeSpan.FromMilliseconds(1000))
+                    .Select(time => Unit.Default)
+                    .InvokeCommand(this, x => x.dialogsDataCommand);
                 this.RaiseAndSetIfChanged(ref _isEnabled, value);
             }
         }
@@ -94,6 +94,7 @@ namespace VKTalker.ViewModels
             get => _messageText;
             set => this.RaiseAndSetIfChanged(ref _messageText, value);
         }
+
         public string ChatName
         {
             get => _chatName;
@@ -122,7 +123,7 @@ namespace VKTalker.ViewModels
             var dialogs = await api.Messages.GetConversationsAsync(new GetConversationsParams
             {
                 Filter = GetConversationFilter.All,
-                Count = 23,
+                Count = 20,
                 Offset = 0,
                 Extended = true
             });
@@ -145,8 +146,21 @@ namespace VKTalker.ViewModels
 
             lock (lockDialog)
             {
-                DialogModels.Clear();
-                DialogModels.AddRange(models);
+                if (DialogModels.Count > 0 && DialogModels.Count == models.Count)
+                {
+                    var i = 0;
+                    foreach (var model in DialogModels)
+                    {
+                        model.Name = models[i].Name;
+                        model.ChatId = models[i].ChatId;
+                        model.Message = models[i].Message;
+                        i++;
+                    }
+                }
+                else
+                {
+                    DialogModels.AddRange(models);
+                }
             }
         }
 
@@ -166,7 +180,8 @@ namespace VKTalker.ViewModels
                 {
                     Name = GetName(m, history.Users),
                     Message = m?.Text ?? m?.Body,
-                    ChatId = m.Id
+                    ChatId = m.Id,
+                    Date = m.Date?.ToString()
                 }).Reverse().ToList();
                 lock (lockMessage)
                 {
