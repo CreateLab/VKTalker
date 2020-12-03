@@ -22,7 +22,7 @@
         <PackageReference Include="VkNet.AudioBypassService" Version="1.7.0" />
     </ItemGroup>
     <ItemGroup>
-      <None Update="Config">
+      <None Update="Config.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

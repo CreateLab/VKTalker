@@ -1,6 +1,9 @@
+using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using VKTalker.Models;
 using VKTalker.ViewModels;
 using VKTalker.Views;
 
@@ -15,11 +18,12 @@ namespace VKTalker
 
         public override void OnFrameworkInitializationCompleted()
         {
+           
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new MainWindowViewModel(),
+                    DataContext = new MainWindowViewModel(ConfigModel.CreateConfig("Config.json")),
                 };
             }
 

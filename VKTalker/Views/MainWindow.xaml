@@ -31,7 +31,7 @@
                         <Border Margin="2" BorderThickness="1" BorderBrush="Black">
                             <Grid RowDefinitions="Auto,Auto, Auto">
                                 <TextBlock Grid.Row="0" Text="{Binding Name}" FontWeight="Bold" />
-                                <TextBlock Grid.Row="1" Text="{Binding Message}" />
+                                <TextBlock Grid.Row="1"  TextWrapping="Wrap" Text="{Binding Message}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
                                 <TextBlock Grid.Row="2" Text="{Binding Date}" FontWeight="Light" />
                             </Grid>
                         </Border>

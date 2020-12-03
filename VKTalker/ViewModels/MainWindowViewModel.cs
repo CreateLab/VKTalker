@@ -19,11 +19,14 @@ namespace VKTalker.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        private const int chatCount = 20;
+        private const int messageCount = 100;
         private bool _isEnabled = false;
         private string _chatName, _messageText;
         private DialogModel _selectedModel;
         private object lockDialog = new object();
         private object lockMessage = new object();
+        private ConfigModel _configModel;
 
         public ObservableCollectionExtended<DialogModel> DialogModels { get; } =
             new ObservableCollectionExtended<DialogModel>();
@@ -39,8 +42,9 @@ namespace VKTalker.ViewModels
 
         private long? ChatId { get; set; }
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(ConfigModel model)
         {
+            _configModel = model;
             authCommand = ReactiveCommand.CreateFromTask(Auth);
             SendMessageCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -103,12 +107,12 @@ namespace VKTalker.ViewModels
 
         private async Task Auth()
         {
-            var data = File.ReadLines("Config").ToList();
+           
             await api.AuthorizeAsync(new ApiAuthParams
             {
-                Login = data[1],
-                Password = data[2],
-                ApplicationId = Convert.ToUInt64(data[0]),
+                Login = _configModel.Login,
+                Password = _configModel.Password,
+                ApplicationId = _configModel.AppId,
                 Settings = Settings.All
             });
             if (api.UserId != default(long))
@@ -120,10 +124,11 @@ namespace VKTalker.ViewModels
 
         private async Task SetStartupDialog()
         {
+            
             var dialogs = await api.Messages.GetConversationsAsync(new GetConversationsParams
             {
                 Filter = GetConversationFilter.All,
-                Count = 20,
+                Count = chatCount,
                 Offset = 0,
                 Extended = true
             });
@@ -168,32 +173,27 @@ namespace VKTalker.ViewModels
         {
             if (ChatId is null)
                 return;
-            try
+
+            var history = await api.Messages.GetHistoryAsync(new MessagesGetHistoryParams
             {
-                var history = await api.Messages.GetHistoryAsync(new MessagesGetHistoryParams
+                Count = messageCount,
+                Extended = true,
+                PeerId = ChatId,
+            });
+            var messages = history.Messages.Select(m => new MessageModel
+            {
+                Name = GetName(m, history.Users),
+                Message = m?.Text ?? m?.Body,
+                ChatId = m.Id,
+                Date = m.Date?.ToString()
+            }).Reverse().ToList();
+            lock (lockMessage)
+            {
+                if (MessageModels.LastOrDefault()?.ChatId != messages.LastOrDefault()?.ChatId)
                 {
-                    Count = 100,
-                    Extended = true,
-                    PeerId = ChatId,
-                });
-                var messages = history.Messages.Select(m => new MessageModel
-                {
-                    Name = GetName(m, history.Users),
-                    Message = m?.Text ?? m?.Body,
-                    ChatId = m.Id,
-                    Date = m.Date?.ToString()
-                }).Reverse().ToList();
-                lock (lockMessage)
-                {
-                    if (MessageModels.LastOrDefault()?.ChatId != messages.LastOrDefault()?.ChatId)
-                    {
-                        MessageModels.Clear();
-                        MessageModels.AddRange(messages);
-                    }
+                    MessageModels.Clear();
+                    MessageModels.AddRange(messages);
                 }
-            }
-            catch (Exception e)
-            {
             }
         }
 
