@@ -1,13 +1,15 @@
 # VKTalker
 how to run
 1) build project
-2) add to bin (executable root) directory file with name Config
+2) add to bin (executable root) directory file with name Config.json
 3) fill config next data
 
-```
-appId
-login
-password
+```json
+{
+  "AppId": 00000000,
+  "Login": "login",
+  "Password": "password"
+}
 ```
 
 4) run
