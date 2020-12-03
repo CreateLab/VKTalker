@@ -18,11 +18,15 @@ namespace VKTalker.Views
             this.WhenAnyValue(x => x.ViewModel.MessageModels.Count)
                 .Subscribe(args => ScrollToTop(args));
             list = this.Get<ListBox>("MessageListBox");
+#if DEBUG
+            this.AttachDevTools();
+#endif
         }
 
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
+
         }
 
         private void ScrollToTop(int count)
