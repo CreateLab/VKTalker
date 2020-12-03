@@ -23,15 +23,15 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
+        <Grid Grid.Column="1"  RowDefinitions="Auto,*,Auto">
             <TextBlock Text="{Binding ChatName}" HorizontalAlignment="Center" />
-            <ListBox Name="MessageListBox" Grid.Row="1" Items="{Binding MessageModels}">
+            <ListBox Name="MessageListBox" Grid.Row="1" Items="{Binding MessageModels}" >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Border Margin="2" BorderThickness="1" BorderBrush="Black">
-                            <Grid RowDefinitions="Auto,Auto, Auto">
+                            <Grid RowDefinitions="Auto,Auto, Auto"  Width="{Binding $parent[Window].Bounds.Width}">
                                 <TextBlock Grid.Row="0" Text="{Binding Name}" FontWeight="Bold" />
-                                <TextBlock Grid.Row="1"  TextWrapping="Wrap" Text="{Binding Message}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                                <TextBox IsReadOnly="True" AcceptsReturn="True" Grid.Row="1"  TextWrapping="Wrap" Text="{Binding Message}" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
                                 <TextBlock Grid.Row="2" Text="{Binding Date}" FontWeight="Light" />
                             </Grid>
                         </Border>
