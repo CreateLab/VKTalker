@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Timers;
+using DynamicData;
 using DynamicData.Binding;
 using Flurl.Http;
 using ReactiveUI;
@@ -27,13 +29,14 @@ namespace VKTalker.ViewModels
         private bool _isEnabled = false;
         private string _chatName, _messageText;
         private DialogModel _selectedModel;
-        private object lockDialog = new object();
-        private object lockMessage = new object();
         private ConfigModel _configModel;
         private ConcurrentQueue<string> _photosQueue = new ConcurrentQueue<string>();
 
-        public ObservableCollectionExtended<DialogModel> DialogModels { get; } =
-            new ObservableCollectionExtended<DialogModel>();
+        /*public ObservableCollectionExtended<DialogModel> DialogModel { get; } =
+            new ObservableCollectionExtended<DialogModel>();*/
+        private SourceList<DialogModel> dialogList = new SourceList<DialogModel>();
+        private readonly ReadOnlyObservableCollection<DialogModel> _dialogModels;
+        public ReadOnlyObservableCollection<DialogModel> DialogModels => _dialogModels;
 
         public ObservableCollectionExtended<MessageModel> MessageModels { get; } =
             new ObservableCollectionExtended<MessageModel>();
@@ -50,6 +53,10 @@ namespace VKTalker.ViewModels
         public MainWindowViewModel(ConfigModel model)
         {
             _configModel = model;
+            dialogList.Connect()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(out _dialogModels)
+                .Subscribe();
             authCommand = ReactiveCommand.CreateFromTask(Auth);
             SendMessageCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -163,10 +170,10 @@ namespace VKTalker.ViewModels
             }
 
 
-            if (DialogModels.Count > 0 && DialogModels.Count == models.Count)
+            if (dialogList.Count > 0 && dialogList.Count == models.Count)
             {
                 var i = 0;
-                foreach (var model in DialogModels)
+                foreach (var model in dialogList.Items)
                 {
                     model.Name = models[i].Name;
                     model.ChatId = models[i].ChatId;
@@ -177,8 +184,8 @@ namespace VKTalker.ViewModels
             }
             else
             {
-                DialogModels.Clear();
-                DialogModels.AddRange(models);
+                dialogList.Clear();
+                dialogList.AddRange(models);
             }
         }
 
@@ -255,16 +262,22 @@ namespace VKTalker.ViewModels
         {
             if (url is null) return null;
             _photosQueue.Enqueue(url);
-            return url.GetHashCode() + ".jpg";
+            GlobalImageDictionary.AddOrUpdate(url.GetHashCode().ToString(),null);
+            return url.GetHashCode().ToString();
         }
 
         private async Task PhotoLoad()
         {
             if (!_photosQueue.TryDequeue(out var url)) return;
-            var name = url.GetHashCode() + ".jpg";
-            if (!File.Exists(Path.Combine(PhotoFolder, name)))
+            var key = url.GetHashCode().ToString();
+            var byteFile = await url.GetBytesAsync();
+            var name = byteFile.GetHashCode().ToString() + ".jpg";
+            var fileName = Path.Combine(PhotoFolder, name);
+            
+            if (GlobalImageDictionary.Get(key) is null)
             {
-                await url.DownloadFileAsync(PhotoFolder, name);
+               await File.WriteAllBytesAsync(fileName,byteFile);
+               GlobalImageDictionary.AddOrUpdate(key, fileName);
             }
         }
     }
