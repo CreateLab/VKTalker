@@ -3,6 +3,7 @@
         xmlns:vm="clr-namespace:VKTalker.ViewModels;assembly=VKTalker"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converter="clr-namespace:VKTalker.Converter"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="VKTalker.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
@@ -11,28 +12,39 @@
     <Design.DataContext>
         <vm:MainWindowViewModel />
     </Design.DataContext>
+    <Window.Resources>
+        <converter:ImageConverter x:Key="ImageConverter" />
+    </Window.Resources>
 
     <Grid ColumnDefinitions="Auto,*">
         <ListBox Name="ChatListBox" Width="200" Items="{Binding DialogModels}" SelectedItem="{Binding SelectedModel}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid RowDefinitions="Auto,Auto" Margin="5">
-                        <TextBlock Grid.Row="0" Text="{Binding Name}" FontWeight="Bold" />
-                        <TextBlock Grid.Row="1" Text="{Binding Message}" />
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Image Source="{Binding Image, Converter={StaticResource ImageConverter}}" />
+                        <Grid Grid.Column="1" RowDefinitions="Auto,Auto" Margin="5">
+                            <TextBlock Grid.Row="0" Text="{Binding Name}" FontWeight="Bold" />
+                            <TextBlock Grid.Row="1" Text="{Binding Message}" />
+                        </Grid>
                     </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
         <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto">
             <TextBlock Text="{Binding ChatName}" HorizontalAlignment="Center" />
-            <ListBox Name="MessageListBox" Padding="2" Grid.Row="1" Items="{Binding MessageModels}">
+            <ListBox ScrollViewer.HorizontalScrollBarVisibility="Disabled" Name="MessageListBox" Padding="2"
+                     Grid.Row="1" Items="{Binding MessageModels}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Border Margin="5" BorderThickness="1" BorderBrush="Black">
-                            <Grid RowDefinitions="Auto,Auto, Auto" >
-                                <TextBlock Grid.Row="0" Text="{Binding Name}" FontWeight="Bold" />
+                            <Grid RowDefinitions="Auto,Auto, Auto">
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto">
+                                    <Image Source="{Binding Image, Converter={StaticResource ImageConverter}}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" />
+                                </Grid>
                                 <TextBlock Grid.Row="1" TextWrapping="Wrap" Text="{Binding Message}"
-                                           ScrollViewer.HorizontalScrollBarVisibility="Disabled" Width="{Binding $parent[Grid].Bounds.Width}" />
+                                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                           Width="{Binding $parent[Grid].Bounds.Width}" />
                                 <TextBlock Grid.Row="2" Text="{Binding Date}" FontWeight="Light" />
                             </Grid>
                         </Border>

@@ -19,6 +19,8 @@
         <PackageReference Include="Avalonia.Desktop" Version="0.10.0-preview6" />
         <PackageReference Include="Avalonia.Diagnostics" Version="0.10.0-preview6" />
         <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0-preview6" />
+        <PackageReference Include="Flurl" Version="3.0.0" />
+        <PackageReference Include="Flurl.Http" Version="3.0.0" />
         <PackageReference Include="VkNet" Version="1.57.0" />
         <PackageReference Include="VkNet.AudioBypassService" Version="1.7.0" />
     </ItemGroup>

@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
@@ -12,11 +13,12 @@ namespace VKTalker.Views
     public class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         private ListBox list;
+
         public MainWindow()
         {
             InitializeComponent();
-            this.WhenAnyValue(x => x.ViewModel.MessageModels.Count)
-                .Subscribe(args => ScrollToTop(args));
+            this.WhenAnyValue(x => x.ViewModel.MessageModels.Count).ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(ScrollToTop);
             list = this.Get<ListBox>("MessageListBox");
 #if DEBUG
             this.AttachDevTools();
@@ -26,16 +28,12 @@ namespace VKTalker.Views
         private void InitializeComponent()
         {
             AvaloniaXamlLoader.Load(this);
-
         }
 
         private void ScrollToTop(int count)
         {
             if (count > 0)
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    list.ScrollIntoView(count);
-                });
+                list.ScrollIntoView(count);
         }
     }
 }
