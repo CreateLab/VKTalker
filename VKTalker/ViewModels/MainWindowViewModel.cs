@@ -23,7 +23,7 @@ namespace VKTalker.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private const int chatCount = 20;
+        private const int chatCount = 4;
         private const int messageCount = 100;
         public const string PhotoFolder = "Photos";
         private bool _isEnabled = false;
@@ -262,22 +262,17 @@ namespace VKTalker.ViewModels
         {
             if (url is null) return null;
             _photosQueue.Enqueue(url);
-            GlobalImageDictionary.AddOrUpdate(url.GetHashCode().ToString(),null);
-            return url.GetHashCode().ToString();
+            //GlobalImageDictionary.AddOrUpdate(url.GetHashCode().ToString(),null);
+            return url.GetHashCode().ToString() + ".jpg";
         }
 
         private async Task PhotoLoad()
         {
             if (!_photosQueue.TryDequeue(out var url)) return;
-            var key = url.GetHashCode().ToString();
-            var byteFile = await url.GetBytesAsync();
-            var name = byteFile.GetHashCode().ToString() + ".jpg";
-            var fileName = Path.Combine(PhotoFolder, name);
-            
-            if (GlobalImageDictionary.Get(key) is null)
+            var name = url.GetHashCode() + ".jpg";
+            if (!File.Exists(Path.Combine(PhotoFolder, name)))
             {
-               await File.WriteAllBytesAsync(fileName,byteFile);
-               GlobalImageDictionary.AddOrUpdate(key, fileName);
+                await url.DownloadFileAsync(PhotoFolder, name);
             }
         }
     }
