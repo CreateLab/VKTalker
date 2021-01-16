@@ -23,14 +23,14 @@ namespace VKTalker.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private const int chatCount = 4;
+        private const int chatCount = 20;
         private const int messageCount = 100;
         public const string PhotoFolder = "Photos";
         private bool _isEnabled = false;
         private string _chatName, _messageText;
         private DialogModel _selectedModel;
         private ConfigModel _configModel;
-        private ConcurrentQueue<string> _photosQueue = new ConcurrentQueue<string>();
+        private ConcurrentQueue<(string,string)> _photosQueue = new ConcurrentQueue<(string,string)>();
 
         /*public ObservableCollectionExtended<DialogModel> DialogModel { get; } =
             new ObservableCollectionExtended<DialogModel>();*/
@@ -156,7 +156,7 @@ namespace VKTalker.ViewModels
                 Name = GetName(dialog, dialogs),
                 ChatId = dialog.Conversation.Peer.Id,
                 Image = AddPhoto(dialog.Conversation.ChatSettings?.Photo?.Photo50?.AbsoluteUri ??
-                                 GetUserPhoto(dialog, dialogs))
+                                 GetUserPhoto(dialog, dialogs),GetUserId(dialog,dialogs))
             }).ToList();
 
             if (SelectedModel is not null)
@@ -196,6 +196,14 @@ namespace VKTalker.ViewModels
                 u.Id == GetPartnerId(dialogLastMessage.LastMessage));
             return user?.Photo50?.AbsoluteUri;
         }
+        private string GetUserId(ConversationAndLastMessage dialogLastMessage,
+        GetConversationsResult getConversationsResult)
+        {
+            var user = getConversationsResult.Profiles.FirstOrDefault(u =>
+                u.Id == GetPartnerId(dialogLastMessage.LastMessage));
+            return user?.Id.ToString();
+        }
+
 
         private async Task GetMessages()
         {
@@ -211,7 +219,7 @@ namespace VKTalker.ViewModels
             var messages = history.Messages.Select(m => new MessageModel
             {
                 Name = GetName(m, history.Users),
-                Image = AddPhoto(GetPhotoByName(m, history.Users)),
+                Image = AddPhoto(GetPhotoByName(m, history.Users),GetUserId(m,history.Users)),
                 Message = m?.Text ?? m?.Body,
                 ChatId = m.Id,
                 Date = m.Date?.ToString()
@@ -228,6 +236,11 @@ namespace VKTalker.ViewModels
         {
             var user = getConversationsResult.FirstOrDefault(u => u.Id == message.FromId);
             return user?.Photo50?.AbsoluteUri;
+        }
+        private string GetUserId(Message message, IEnumerable<User> getConversationsResult)
+        {
+            var user = getConversationsResult.FirstOrDefault(u => u.Id == message.FromId);
+            return user?.Id.ToString();
         }
 
         private string GetName(Message message, IEnumerable<User> getConversationsResult)
@@ -258,21 +271,20 @@ namespace VKTalker.ViewModels
                 : dialogLastMessage.Text;
         }
 
-        private string AddPhoto(string url)
+        private string AddPhoto(string url, string id)
         {
             if (url is null) return null;
-            _photosQueue.Enqueue(url);
-            //GlobalImageDictionary.AddOrUpdate(url.GetHashCode().ToString(),null);
-            return url.GetHashCode().ToString() + ".jpg";
+            _photosQueue.Enqueue((url,id));
+            return id + ".jpg";
         }
 
         private async Task PhotoLoad()
         {
-            if (!_photosQueue.TryDequeue(out var url)) return;
-            var name = url.GetHashCode() + ".jpg";
+            if (!_photosQueue.TryDequeue(out var data)) return;
+            var name = data.Item2 + ".jpg";
             if (!File.Exists(Path.Combine(PhotoFolder, name)))
             {
-                await url.DownloadFileAsync(PhotoFolder, name);
+                await data.Item1.DownloadFileAsync(PhotoFolder, name);
             }
         }
     }
