@@ -21,7 +21,7 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid>
+        <Grid Background="#55B0E0E6">
             <ListBox Name="ChatListBox" Width="200" Items="{Binding DialogModels}"
                      SelectedItem="{Binding SelectedModel}">
                 <ListBox.ItemTemplate>
@@ -37,30 +37,35 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Grid>
-        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,Auto">
-            <TextBlock Text="{Binding ChatName}" HorizontalAlignment="Center" Grid.ColumnSpan="2"/>
-            <ListBox Grid.ColumnSpan="2" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Name="MessageListBox" Padding="2"
+        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,Auto" Background="#33B0E0E6">
+            <TextBlock Text="{Binding ChatName}" HorizontalAlignment="Center" Grid.ColumnSpan="2" />
+            <ListBox  Grid.ColumnSpan="2" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Name="MessageListBox"
+                     Padding="2"
                      Grid.Row="1" Items="{Binding MessageModels}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Margin="5" BorderThickness="1" BorderBrush="Black">
-                            <Grid RowDefinitions="Auto,Auto, Auto">
+                      
+                        <Border  BorderBrush="Black" Width="{Binding $parent[ListBox].Bounds.Width}">
+                            <Grid Margin="5" RowDefinitions="Auto,Auto, Auto">
                                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto">
                                     <Image Source="{Binding Image, Converter={StaticResource ImageConverter}}" />
                                     <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" />
                                 </Grid>
-                                <TextBlock Grid.Row="1" TextWrapping="Wrap" Text="{Binding Message}"
+                                <TextBlock Margin="5" Grid.Row="1" TextWrapping="Wrap" Text="{Binding Message}"
                                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                           Width="{Binding $parent[Grid].Bounds.Width}" />
+                                            />
                                 <TextBlock Grid.Row="2" Text="{Binding Date}" FontWeight="Light" />
                             </Grid>
                         </Border>
+                            
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-      
-                <TextBox  Grid.Row="2" Text="{Binding MessageText}" />
-            <!--<Button Grid.Row="2"  Grid.Column="1" Command="{Binding SendMessageCommand}"> Send </Button>-->
+
+            <Border Grid.Row="2" BorderThickness="1">
+                <TextBox Margin="1" Text="{Binding MessageText}" />
+            </Border>
+            <Button Grid.Row="2" Margin="0, 0, 5 ,0" Grid.Column="1" Command="{Binding SendMessageCommand}"> Send </Button>
         </Grid>
     </Grid>
 

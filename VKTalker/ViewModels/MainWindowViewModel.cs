@@ -148,7 +148,7 @@ namespace VKTalker.ViewModels
                 Filter = GetConversationFilter.All,
                 Count = chatCount,
                 Offset = 0,
-                Extended = true
+                Extended = true,
             });
             var models = dialogs.Items.Select(dialog => new DialogModel
             {
@@ -194,6 +194,13 @@ namespace VKTalker.ViewModels
         {
             var user = getConversationsResult.Profiles.FirstOrDefault(u =>
                 u.Id == GetPartnerId(dialogLastMessage.LastMessage));
+            if (user == null)
+            {
+              var group =  getConversationsResult.Groups.FirstOrDefault(u =>
+                  u.Id == GetPartnerId(dialogLastMessage.LastMessage));
+              var photourl = group?.Photo50?.AbsoluteUri;
+              return photourl;
+            }
             return user?.Photo50?.AbsoluteUri;
         }
         private string GetUserId(ConversationAndLastMessage dialogLastMessage,
@@ -201,6 +208,12 @@ namespace VKTalker.ViewModels
         {
             var user = getConversationsResult.Profiles.FirstOrDefault(u =>
                 u.Id == GetPartnerId(dialogLastMessage.LastMessage));
+            if (user == null)
+            {
+                var group = getConversationsResult.Groups.FirstOrDefault(u =>
+                    u.Id == GetPartnerId(dialogLastMessage.LastMessage));
+                return group?.Id.ToString();   
+            }
             return user?.Id.ToString();
         }
 
@@ -260,7 +273,8 @@ namespace VKTalker.ViewModels
 
         private long? GetPartnerId(Message dialogLastMessage)
         {
-            return dialogLastMessage.FromId == api.UserId ? dialogLastMessage.PeerId : dialogLastMessage.FromId;
+            var id = dialogLastMessage.FromId == api.UserId ? dialogLastMessage.PeerId : dialogLastMessage.FromId;
+            return id < 0 ? -1 * id : id;
         }
 
         private string GetText(Message dialogLastMessage)
