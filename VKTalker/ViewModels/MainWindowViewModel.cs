@@ -23,7 +23,7 @@ namespace VKTalker.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private const int chatCount = 20;
+        private const int chatCount = 5;
         private const int messageCount = 100;
         public const string PhotoFolder = "Photos";
         private bool _isEnabled = false;
@@ -231,8 +231,8 @@ namespace VKTalker.ViewModels
             });
             var messages = history.Messages.Select(m => new MessageModel
             {
-                Name = GetName(m, history.Users),
-                Image = AddPhoto(GetPhotoByName(m, history.Users),GetUserId(m,history.Users)),
+                Name = GetName(m, history),
+                Image = AddPhoto(GetPhotoByName(m, history),GetUserId(m,history)),
                 Message = m?.Text ?? m?.Body,
                 ChatId = m.Id,
                 Date = m.Date?.ToString()
@@ -245,20 +245,36 @@ namespace VKTalker.ViewModels
             }
         }
 
-        private string GetPhotoByName(Message message, IEnumerable<User> getConversationsResult)
+      
+        private string GetPhotoByName(Message message, MessageGetHistoryObject getConversationsResult)
         {
-            var user = getConversationsResult.FirstOrDefault(u => u.Id == message.FromId);
+            var user = getConversationsResult?.Users.FirstOrDefault(u => u.Id == message.FromId);
+            if (user is null)
+            {
+                var g = getConversationsResult?.Groups.FirstOrDefault(u => u.Id == -1*message.FromId);
+                return g?.Photo50?.AbsoluteUri;
+            }
             return user?.Photo50?.AbsoluteUri;
         }
-        private string GetUserId(Message message, IEnumerable<User> getConversationsResult)
+        private string GetUserId(Message message, MessageGetHistoryObject getConversationsResult)
         {
-            var user = getConversationsResult.FirstOrDefault(u => u.Id == message.FromId);
+            var user = getConversationsResult.Users.FirstOrDefault(u => u.Id == message.FromId);
+            if (user is null)
+            {
+                var g = getConversationsResult?.Groups.FirstOrDefault(u => u.Id == -1*message.FromId);
+                return g?.Id.ToString();
+            }
             return user?.Id.ToString();
         }
 
-        private string GetName(Message message, IEnumerable<User> getConversationsResult)
+        private string GetName(Message message, MessageGetHistoryObject getConversationsResult)
         {
-            var user = getConversationsResult.FirstOrDefault(u => u.Id == message.FromId);
+            var user = getConversationsResult.Users.FirstOrDefault(u => u.Id == message.FromId);
+            if (user is null)
+            {
+                var g = getConversationsResult?.Groups.FirstOrDefault(u => u.Id == -1*message.FromId);
+                return g?.Name ?? string.Empty;
+            }
             return user?.FirstName ?? string.Empty;
         }
 
@@ -268,6 +284,11 @@ namespace VKTalker.ViewModels
             if (!string.IsNullOrEmpty(title))
                 return title;
             var user = getConversationsResult.Profiles.FirstOrDefault(u => u.Id == GetPartnerId(dialog.LastMessage));
+            if (user == null)
+            {
+                var g =getConversationsResult.Groups.FirstOrDefault(u => u.Id ==  GetPartnerId(dialog.LastMessage));
+                return g?.Name ?? string.Empty;
+            }
             return user?.FirstName ?? string.Empty;
         }
 

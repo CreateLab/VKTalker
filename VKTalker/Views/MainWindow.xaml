@@ -21,9 +21,9 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Grid Background="#55B0E0E6">
-            <ListBox Name="ChatListBox" Width="200" Items="{Binding DialogModels}"
-                     SelectedItem="{Binding SelectedModel}">
+        <Grid>
+            <ListBox  Background="#55B0E0E6" Name="ChatListBox" Width="200" Items="{Binding DialogModels}"
+                      SelectedItem="{Binding SelectedModel}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <Grid ColumnDefinitions="Auto,*">
@@ -37,9 +37,9 @@
                 </ListBox.ItemTemplate>
             </ListBox>
         </Grid>
-        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,Auto" Background="#33B0E0E6">
+        <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,Auto" >
             <TextBlock Text="{Binding ChatName}" HorizontalAlignment="Center" Grid.ColumnSpan="2" />
-            <ListBox  Grid.ColumnSpan="2" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Name="MessageListBox"
+            <ListBox Background="#33B0E0E6"  Grid.ColumnSpan="2" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Name="MessageListBox"
                      Padding="2"
                      Grid.Row="1" Items="{Binding MessageModels}">
                 <ListBox.ItemTemplate>
@@ -51,9 +51,9 @@
                                     <Image Source="{Binding Image, Converter={StaticResource ImageConverter}}" />
                                     <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Bold" />
                                 </Grid>
-                                <TextBlock Margin="5" Grid.Row="1" TextWrapping="Wrap" Text="{Binding Message}"
+                                <TextBlock Background="#99B0E0E6" Margin="5" Grid.Row="1" TextWrapping="Wrap" Text="{Binding Message}"
                                            ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                            />
+                                />
                                 <TextBlock Grid.Row="2" Text="{Binding Date}" FontWeight="Light" />
                             </Grid>
                         </Border>
